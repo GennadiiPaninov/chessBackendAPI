@@ -1,33 +1,35 @@
-import { Injectable } from '@nestjs/common';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  // constructor(private userService: UsersService) {}
-  // async signIn(username: string, pass: string): Promise<any> {
-  //   const user = await this.usersService.findOne(username);
-  //   if (user?.password !== pass) {
-  //     throw new UnauthorizedException();
-  //   }
-  //   const { password, ...result } = user;
-  //   // TODO: Generate a JWT and return it here
-  //   // instead of the user object
-  //   return result;
-  // }
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  /**
+   * Аутентифицирует пользователя и возвращает JWT-токен.
+   * @param email Электронная почта пользователя
+   * @param pass Пароль пользователя
+   * @returns Объект с access-токеном
+   * @throws UnauthorizedException при неверных учетных данных
+   */
+  async signIn(email: string, pass: string): Promise<{ access_token: string }> {
+    const user = await this.usersService.findOne(email);
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    const isPasswordValid = await bcrypt.compare(pass, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Incorrect password');
+    }
+    const payload = { sub: user.id };
+    return {
+      access_token: await this.jwtService.signAsync(payload),
+    };
   }
 }
