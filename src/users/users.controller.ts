@@ -17,7 +17,7 @@ export class UsersController {
 
   @Post()
   async signupUser(
-    @Body() userData: { name?: string; email: string },
+    @Body() userData: { name?: string; email: string; password: string },
   ): Promise<User> {
     return this.usersService.createUser(userData);
   }
@@ -28,12 +28,12 @@ export class UsersController {
   }
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+    return this.usersService.remove(id);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+    return this.usersService.findOne(id);
   }
 
   @Patch(':id')

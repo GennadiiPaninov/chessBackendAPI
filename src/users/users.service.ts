@@ -10,7 +10,7 @@ export class UsersService {
       data,
     });
   }
-  async remove(id: number): Promise<User> {
+  async remove(id: string): Promise<User> {
     try {
       return await this.prisma.user.delete({
         where: { id },
@@ -25,8 +25,12 @@ export class UsersService {
     return this.prisma.user.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: string) {
+    return this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
