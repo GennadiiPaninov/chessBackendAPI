@@ -8,6 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import * as jwt from 'jsonwebtoken';
 
 /**
  * Guard для проверки JWT-токена в запросах.
@@ -28,6 +29,7 @@ export class AuthGuard implements CanActivate {
    * @throws UnauthorizedException Если токен отсутствует или недействителен
    */
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Проверяем, является ли маршрут публичным (не требует аутентификации)
     const isPublic = this.reflector.get<boolean>(
       'isPublic',
       context.getHandler(),
@@ -37,34 +39,80 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
+
+    // Извлекаем access-токен из заголовка Authorization
     const token = this.extractTokenFromHeader(request);
 
-    if (!token) {
-      throw new UnauthorizedException('Токен не найден');
-    }
-
     try {
-      const secret = this.configService.get<string>('JWT_SECRET');
-      if (!secret) {
-        throw new Error('Секрет JWT не настроен');
+      if (token) {
+        // Если access-токен найден, проверяем его валидность
+        const payload = await this.verifyToken(
+          token,
+          this.configService.get<string>('JWT_SECRET'),
+        );
+        request['user'] = payload; // Добавляем данные пользователя в объект запроса
+        return true;
       }
 
-      const payload = await this.jwtService.verifyAsync(token, { secret });
-      request['user'] = payload;
+      // Если access-токен отсутствует, проверяем наличие refresh-токена в cookies
+      const refreshToken = request.cookies['refresh_token'];
+      if (!refreshToken) {
+        throw new UnauthorizedException('Токен не найден');
+      }
+
+      // Проверяем refresh-токен
+      const refreshPayload = await this.verifyToken(
+        refreshToken,
+        this.configService.get<string>('JWT_SECRET'),
+      );
+      request['user'] = refreshPayload; // Добавляем данные пользователя в объект запроса
+
+      return true;
     } catch (error) {
       console.log(error);
-      throw new UnauthorizedException('Invalid token');
+      throw new UnauthorizedException('Неверный или просроченный токен');
     }
-
-    return true;
   }
+
   /**
    * Извлекает JWT-токен из заголовка Authorization.
    * @param request Объект запроса Express
-   * @returns Токен или undefined, если заголовок некорректен
+   * @returns Токен или undefined, если заголовок отсутствует или имеет некорректный формат
+   * @throws UnauthorizedException Если заголовок Authorization имеет неверный формат
    */
   private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    const authHeader = request.headers.authorization;
+    if (!authHeader) return undefined;
+
+    // Проверяем формат заголовка Authorization (он должен быть "Bearer <токен>")
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+      throw new UnauthorizedException('Некорректный формат токена');
+    }
+    return parts[1];
+  }
+
+  /**
+   * Проверяет валидность переданного JWT-токена.
+   * @param token Строка с JWT-токеном
+   * @param secret Секретный ключ для валидации токена
+   * @returns Promise<any> Декодированные данные из токена (payload)
+   * @throws UnauthorizedException Если токен недействителен, истек или имеет неверный формат
+   */
+  private async verifyToken(token: string, secret: string) {
+    try {
+      return await this.jwtService.verifyAsync(token, { secret });
+    } catch (error) {
+      // Проверяем, является ли ошибка истечением срока действия токена
+      if (error instanceof jwt.TokenExpiredError) {
+        throw new UnauthorizedException('Токен истек');
+      }
+      // Проверяем, является ли ошибка неверным форматом токена
+      if (error instanceof jwt.JsonWebTokenError) {
+        throw new UnauthorizedException('Некорректный токен');
+      }
+      // Если ошибка не распознана, выбрасываем общее исключение
+      throw new UnauthorizedException('Ошибка валидации токена');
+    }
   }
 }
