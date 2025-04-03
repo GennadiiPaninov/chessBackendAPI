@@ -65,7 +65,7 @@ export class AuthGuard implements CanActivate {
         refreshToken,
         this.configService.get<string>('JWT_SECRET'),
       );
-      request['user'] = refreshPayload; // Добавляем данные пользователя в объект запроса
+      request['user'] = refreshPayload;
 
       return true;
     } catch (error) {
@@ -84,7 +84,6 @@ export class AuthGuard implements CanActivate {
     const authHeader = request.headers.authorization;
     if (!authHeader) return undefined;
 
-    // Проверяем формат заголовка Authorization (он должен быть "Bearer <токен>")
     const parts = authHeader.split(' ');
     if (parts.length !== 2 || parts[0] !== 'Bearer') {
       throw new UnauthorizedException('Некорректный формат токена');
@@ -103,15 +102,12 @@ export class AuthGuard implements CanActivate {
     try {
       return await this.jwtService.verifyAsync(token, { secret });
     } catch (error) {
-      // Проверяем, является ли ошибка истечением срока действия токена
       if (error instanceof jwt.TokenExpiredError) {
         throw new UnauthorizedException('Токен истек');
       }
-      // Проверяем, является ли ошибка неверным форматом токена
       if (error instanceof jwt.JsonWebTokenError) {
         throw new UnauthorizedException('Некорректный токен');
       }
-      // Если ошибка не распознана, выбрасываем общее исключение
       throw new UnauthorizedException('Ошибка валидации токена');
     }
   }
