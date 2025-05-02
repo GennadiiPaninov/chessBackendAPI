@@ -3,4 +3,6 @@ export interface UpdateUserDto {
   email?: string;
   name?: string;
   refreshToken?: string | null;
+  isEmailConfirmed?: boolean;
+  emailConfirmToken?: string | null;
 }

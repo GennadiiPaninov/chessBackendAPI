@@ -3,11 +3,13 @@ import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Request, Response } from 'express';
+import { EmailService } from '../core/email/email.service';
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   /**
@@ -55,6 +57,43 @@ export class AuthService {
     };
   }
 
+  /**
+   * Регистрирует пользователя, возвращает статускод и направляет письмо на email.
+   * @param email Электронная почта пользователя
+   * @param pass Пароль пользователя
+   * @returns статускод
+   * @throws UnauthorizedException при неверных учетных данных
+   */
+
+  async signUp(email: string, pass: string): Promise<{ message: string }> {
+    const existingUser = await this.usersService.findOne(email);
+    if (existingUser) {
+      throw new UnauthorizedException('Пользователь уже существует');
+    }
+
+    const newUser = await this.usersService.createUser({
+      email,
+      password: pass,
+    });
+
+    await this.emailService.sendVerificationEmail(
+      newUser.email,
+      newUser.emailConfirmToken,
+    );
+
+    return { message: 'Письмо с подтверждением отправлено на почту' };
+  }
+  async confirmEmail(token: string) {
+    const user = await this.usersService.findByConfirmToken(token);
+    if (!user) {
+      throw new UnauthorizedException('Некорректный токен');
+    }
+    await this.usersService.update(user.id, {
+      isEmailConfirmed: true,
+      emailConfirmToken: null,
+    });
+    return { message: 'Email подтверждён' };
+  }
   async refreshAccessToken(
     refresh_token: string,
     res: Response,
@@ -98,6 +137,7 @@ export class AuthService {
     if (!refresh_token) {
       throw new UnauthorizedException('No refresh token found');
     }
+
     // Декодируем токен, чтобы получить ID пользователя
     const decoded = await this.jwtService.verifyAsync(refresh_token);
     await this.usersService.update(decoded.sub, { refreshToken: null });

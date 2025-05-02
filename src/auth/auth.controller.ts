@@ -34,6 +34,20 @@ export class AuthController {
         .json({ message: error.message });
     }
   }
+  @HttpCode(HttpStatus.OK)
+  @Post('register')
+  @Public()
+  async signUp(@Body() data: SignInDto, @Res() res: Response) {
+    try {
+      const result = await this.authService.signUp(data.email, data.password);
+      return res.json(result);
+    } catch (error) {
+      console.error('Error during sign in:', error);
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .json({ message: error.message });
+    }
+  }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
@@ -48,7 +62,11 @@ export class AuthController {
     );
     return result;
   }
-
+  @Post('confirm-email')
+  async confirmEmail(@Body('token') token: string, @Res() res: Response) {
+    const result = await this.authService.confirmEmail(token);
+    return res.json(result);
+  }
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async logout(@Req() req: Request, @Res() res: Response) {

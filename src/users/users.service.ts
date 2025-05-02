@@ -3,16 +3,20 @@ import { PrismaService } from '../prisma.service';
 import { Prisma, User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
     const hashedPassword = await this.hashPassword(data.password);
+    const emailConfirmToken = uuidv4();
+    console.log(data);
     return this.prisma.user.create({
       data: {
         ...data,
         password: hashedPassword,
+        emailConfirmToken,
       },
     });
   }
@@ -69,5 +73,10 @@ export class UsersService {
       data: obj,
     });
     return;
+  }
+  async findByConfirmToken(token: string): Promise<User> {
+    return this.prisma.user.findFirst({
+      where: { emailConfirmToken: token },
+    });
   }
 }
