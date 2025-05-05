@@ -1,17 +1,21 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { Public } from '../../decorators/Public';
 import { Response, Request } from 'express';
+import { AuthGuard } from './guard/auth.guard';
+import { User } from '../core/userDecorator/userDecorator';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -72,5 +76,14 @@ export class AuthController {
   async logout(@Req() req: Request, @Res() res: Response) {
     const result = await this.authService.clearToken(req, res);
     return result;
+  }
+  @Get('me')
+  @UseGuards(AuthGuard)
+  async getMe(@User() user: any) {
+    return {
+      id: user.sub,
+      email: user.email,
+      isEmailConfirmed: user.isEmailConfirmed,
+    };
   }
 }
