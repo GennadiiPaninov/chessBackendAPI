@@ -12,7 +12,7 @@ export class EmailService {
   });
 
   async sendVerificationEmail(to: string, token: string) {
-    const url = `${process.env.CLIENT_URL}/verify-email?token=${token}`;
+    const url = `${process.env.CLIENT_URL}/verify/${token}`;
     await this.transporter.sendMail({
       from: process.env.SMTP_USER,
       to,
