@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -44,29 +45,34 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
 
     try {
+      let payload;
+
       if (token) {
         // Если access-токен найден, проверяем его валидность
-        const payload = await this.verifyToken(
+        payload = await this.verifyToken(
           token,
           this.configService.get<string>('JWT_SECRET'),
         );
-        request['user'] = payload; // Добавляем данные пользователя в объект запроса
-        return true;
+      } else {
+        // Если access-токен отсутствует, проверяем наличие refresh-токена в cookies
+        const refreshToken = request.cookies['refresh_token'];
+        if (!refreshToken) {
+          throw new UnauthorizedException('Токен не найден');
+        }
+
+        // Проверяем refresh-токен
+        payload = await this.verifyToken(
+          refreshToken,
+          this.configService.get<string>('JWT_SECRET'),
+        );
       }
 
-      // Если access-токен отсутствует, проверяем наличие refresh-токена в cookies
-      const refreshToken = request.cookies['refresh_token'];
-      if (!refreshToken) {
-        throw new UnauthorizedException('Токен не найден');
+      // Дополнительная проверка подтверждения email
+      if (!payload.isEmailConfirmed) {
+        throw new ForbiddenException('Email не подтверждён');
       }
 
-      // Проверяем refresh-токен
-      const refreshPayload = await this.verifyToken(
-        refreshToken,
-        this.configService.get<string>('JWT_SECRET'),
-      );
-      request['user'] = refreshPayload;
-
+      request['user'] = payload; // Добавляем данные пользователя в объект запроса
       return true;
     } catch (error) {
       console.log(error);
