@@ -33,7 +33,10 @@ export class AuthService {
     if (!isPasswordValid) {
       throw new UnauthorizedException('Incorrect password');
     }
-    const payload = { sub: user.id };
+    const payload = {
+      sub: user.id,
+      isEmailConfirmed: user.isEmailConfirmed,
+    };
 
     const access_token = await this.jwtService.signAsync(payload, {
       expiresIn: '15m',
@@ -51,7 +54,6 @@ export class AuthService {
       sameSite: 'strict',
       path: '/auth/refresh',
     });
-    console.log('Попал, res, закончился', access_token, refresh_token);
     return {
       access_token,
     };
