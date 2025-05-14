@@ -22,4 +22,32 @@ model User {
   refreshToken      String?
   isEmailConfirmed  Boolean  @default(false)
   emailConfirmToken String?
+  debuts            Debut[]
+}
+
+model Debut {
+  id        String   @id @default(uuid())
+  title     String
+  desc      String
+  createdAt DateTime @default(now())
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  firstMoves Move[] @relation("DebutFirstMoves")
+}
+
+model Move {
+  id       String @id @default(uuid())
+  title    String
+  desc     String
+  notation String
+
+  debut   Debut?  @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
+  debutId String?
+
+  parent   Move?   @relation("MoveChildren", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId String?
+
+  children Move[] @relation("MoveChildren")
 }
