@@ -31,6 +31,8 @@ model Debut {
   desc      String
   createdAt DateTime @default(now())
 
+  side String
+
   owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String
 
