@@ -11,9 +11,5 @@ export class CreateDebutDto {
 
   @IsNotEmpty()
   @IsString()
-  ownerId: string;
-
-  @IsNotEmpty()
-  @IsString()
   side: string;
 }

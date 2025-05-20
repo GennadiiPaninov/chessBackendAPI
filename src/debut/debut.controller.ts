@@ -10,14 +10,15 @@ import {
 import { DebutService } from './debut.service';
 import { CreateDebutDto } from './dto/create-debut.dto';
 import { UpdateDebutDto } from './dto/update-debut.dto';
+import { User } from '../core/userDecorator/userDecorator';
 
 @Controller('debuts')
 export class DebutController {
   constructor(private readonly debutService: DebutService) {}
 
   @Post()
-  create(@Body() dto: CreateDebutDto) {
-    return this.debutService.create(dto);
+  create(@User() user: any, @Body() dto: CreateDebutDto) {
+    return this.debutService.create(dto, user.sub);
   }
 
   @Get()

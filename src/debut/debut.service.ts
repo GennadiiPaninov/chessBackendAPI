@@ -7,12 +7,12 @@ import { UpdateDebutDto } from './dto/update-debut.dto';
 export class DebutService {
   constructor(private prisma: PrismaService) {}
 
-  create(dto: CreateDebutDto) {
+  create(dto: CreateDebutDto, user: string) {
     return this.prisma.debut.create({
       data: {
         title: dto.title,
         desc: dto.desc,
-        owner: { connect: { id: dto.ownerId } },
+        owner: { connect: { id: user } },
         side: dto.side,
       },
     });
