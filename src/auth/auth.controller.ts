@@ -67,6 +67,7 @@ export class AuthController {
     return result;
   }
   @Post('confirm-email')
+  @Public()
   async confirmEmail(@Body('token') token: string, @Res() res: Response) {
     const result = await this.authService.confirmEmail(token);
     return res.json(result);
