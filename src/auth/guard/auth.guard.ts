@@ -40,7 +40,7 @@ export class AuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request>();
-
+    console.log('Cookies:', request.cookies);
     // Извлекаем access-токен из заголовка Authorization
     const token = this.extractTokenFromHeader(request);
 
