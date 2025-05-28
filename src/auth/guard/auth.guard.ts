@@ -75,8 +75,18 @@ export class AuthGuard implements CanActivate {
       request['user'] = payload; // Добавляем данные пользователя в объект запроса
       return true;
     } catch (error) {
-      console.log(error);
-      throw new UnauthorizedException('Неверный или просроченный токен');
+      if (error instanceof jwt.TokenExpiredError) {
+        console.log('Token expired');
+        throw new UnauthorizedException('Токен истек');
+      }
+
+      if (error instanceof jwt.JsonWebTokenError) {
+        console.log('Invalid token:', error.message);
+        throw new UnauthorizedException('Неверный токен');
+      }
+
+      console.log('Unexpected JWT error:', error);
+      throw new UnauthorizedException('Ошибка валидации токена');
     }
   }
 
