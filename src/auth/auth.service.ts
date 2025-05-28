@@ -51,8 +51,9 @@ export class AuthService {
     res.cookie('refresh_token', refresh_token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'strict',
+      sameSite: 'none',
       path: '/',
+      domain: '.vercel.app',
     });
     return {
       access_token,
@@ -123,8 +124,9 @@ export class AuthService {
       res.cookie('refresh_token', new_refresh_token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'strict',
+        sameSite: 'none',
         path: '/',
+        domain: '.vercel.app',
       });
 
       return { access_token: new_access_token };
