@@ -118,12 +118,16 @@ export class AuthGuard implements CanActivate {
     try {
       return await this.jwtService.verifyAsync(token, { secret });
     } catch (error) {
-      if (error instanceof jwt.TokenExpiredError) {
+      console.error('JWT verification failed:', error);
+
+      if (error?.name === 'TokenExpiredError') {
         throw new UnauthorizedException('Токен истек');
       }
-      if (error instanceof jwt.JsonWebTokenError) {
+
+      if (error?.name === 'JsonWebTokenError') {
         throw new UnauthorizedException('Некорректный токен');
       }
+
       throw new UnauthorizedException('Ошибка валидации токена');
     }
   }
