@@ -53,7 +53,6 @@ export class AuthService {
       secure: true,
       sameSite: 'none',
       path: '/',
-      domain: '.vercel.app',
     });
     return {
       access_token,
@@ -126,7 +125,6 @@ export class AuthService {
         secure: true,
         sameSite: 'none',
         path: '/',
-        domain: '.vercel.app',
       });
 
       return { access_token: new_access_token };
