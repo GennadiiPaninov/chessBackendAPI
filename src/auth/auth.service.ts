@@ -108,7 +108,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid refresh token');
       }
 
-      const payload = { sub: user.id };
+      const payload = { sub: user.id, isEmailConfirmed: user.isEmailConfirmed };
       const new_access_token = await this.jwtService.signAsync(payload, {
         expiresIn: '15m',
       });
