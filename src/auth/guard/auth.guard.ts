@@ -49,10 +49,15 @@ export class AuthGuard implements CanActivate {
 
       if (token) {
         // Если access-токен найден, проверяем его валидность
+
+        console.log('Access token payload1:', payload);
+        console.log('isEmailConfirmed1:', payload?.isEmailConfirmed);
         payload = await this.verifyToken(
           token,
           this.configService.get<string>('JWT_SECRET'),
         );
+        console.log('Access token payload2:', payload);
+        console.log('isEmailConfirmed2:', payload?.isEmailConfirmed);
       } else {
         // Если access-токен отсутствует, проверяем наличие refresh-токена в cookies
         const refreshToken = request.cookies['refresh_token'];
