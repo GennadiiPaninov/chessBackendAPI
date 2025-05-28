@@ -86,7 +86,7 @@ export class AuthGuard implements CanActivate {
       }
 
       console.log('Unexpected JWT error:', error);
-      throw new UnauthorizedException('Ошибка валидации токена');
+      throw new UnauthorizedException('Ошибка валидации токена1');
     }
   }
 
