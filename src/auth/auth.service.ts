@@ -52,7 +52,7 @@ export class AuthService {
       httpOnly: true,
       secure: true,
       sameSite: 'strict',
-      path: '/auth/refresh',
+      path: '/',
     });
     return {
       access_token,
@@ -124,7 +124,7 @@ export class AuthService {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        path: '/auth/refresh',
+        path: '/',
       });
 
       return { access_token: new_access_token };
