@@ -8,7 +8,6 @@ async function bootstrap() {
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());
 
-  // можно оставить для локальной разработки
   app.enableCors({
     origin: true,
     credentials: true,
