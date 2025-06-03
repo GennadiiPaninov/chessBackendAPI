@@ -79,7 +79,6 @@ export class AuthController {
     return result;
   }
   @Get('me')
-  @UseGuards(AuthGuard)
   async getMe(@User() user: any) {
     return {
       id: user.sub,

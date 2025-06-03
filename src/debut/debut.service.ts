@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateDebutDto } from './dto/create-debut.dto';
 import { UpdateDebutDto } from './dto/update-debut.dto';
@@ -7,7 +7,7 @@ import { UpdateDebutDto } from './dto/update-debut.dto';
 export class DebutService {
   constructor(private prisma: PrismaService) {}
 
-  create(dto: CreateDebutDto, user: string) {
+  async create(dto: CreateDebutDto, user: string) {
     return this.prisma.debut.create({
       data: {
         title: dto.title,
@@ -18,8 +18,9 @@ export class DebutService {
     });
   }
 
-  findAll() {
+  async findAll(userId: string, onlyMine: boolean = false) {
     return this.prisma.debut.findMany({
+      where: onlyMine ? { ownerId: userId } : undefined,
       include: {
         firstMoves: {
           include: { children: true },
@@ -28,7 +29,7 @@ export class DebutService {
     });
   }
 
-  findOne(id: string) {
+  async findOne(id: string) {
     return this.prisma.debut.findUnique({
       where: { id },
       include: {
@@ -39,16 +40,33 @@ export class DebutService {
     });
   }
 
-  update(id: string, dto: UpdateDebutDto) {
+  async update(id: string, dto: UpdateDebutDto, userId) {
+    const debut = await this.prisma.debut.findUnique({ where: { id } });
+    if (!debut) {
+      throw new ForbiddenException('Дебют не найден');
+    }
+
+    if (debut.ownerId !== userId) {
+      throw new ForbiddenException('Вы не можете обновить чужой дебют');
+    }
+
     return this.prisma.debut.update({
       where: { id },
       data: dto,
     });
   }
 
-  remove(id: string) {
-    return this.prisma.debut.delete({
-      where: { id },
-    });
+  async remove(id: string, userId: string) {
+    const debut = await this.prisma.debut.findUnique({ where: { id } });
+
+    if (!debut) {
+      throw new ForbiddenException('Дебют не найден');
+    }
+
+    if (debut.ownerId !== userId) {
+      throw new ForbiddenException('Вы не можете удалить чужой дебют');
+    }
+
+    return this.prisma.debut.delete({ where: { id } });
   }
 }

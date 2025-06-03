@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { DebutService } from './debut.service';
 import { CreateDebutDto } from './dto/create-debut.dto';
@@ -17,27 +18,32 @@ export class DebutController {
   constructor(private readonly debutService: DebutService) {}
 
   @Post()
-  create(@User() user: any, @Body() dto: CreateDebutDto) {
+  async create(@User() user: any, @Body() dto: CreateDebutDto) {
     return this.debutService.create(dto, user.sub);
   }
 
   @Get()
-  findAll() {
-    return this.debutService.findAll();
+  async findAll(@User() user: any, @Query('my') my: string) {
+    const onlyMine = my === 'true';
+    return this.debutService.findAll(user.sub, onlyMine);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.debutService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateDebutDto) {
-    return this.debutService.update(id, dto);
+  async update(
+    @User() user: any,
+    @Param('id') id: string,
+    @Body() dto: UpdateDebutDto,
+  ) {
+    return this.debutService.update(id, dto, user.sub);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.debutService.remove(id);
+  async remove(@Param('id') id: string, @User() user: any) {
+    return this.debutService.remove(id, user.sub);
   }
 }
