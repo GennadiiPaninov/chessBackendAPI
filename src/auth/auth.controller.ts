@@ -8,13 +8,11 @@ import {
   Req,
   Res,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { Public } from '../../decorators/Public';
 import { Response, Request } from 'express';
-import { AuthGuard } from './guard/auth.guard';
 import { User } from '../core/userDecorator/userDecorator';
 @Controller('auth')
 export class AuthController {

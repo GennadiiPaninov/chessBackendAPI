@@ -54,6 +54,13 @@ export class AuthService {
       sameSite: 'none',
       path: '/',
     });
+    res.cookie('access_token', access_token, {
+      httpOnly: false,
+      secure: true,
+      sameSite: 'none',
+      path: '/',
+      maxAge: 1000 * 60 * 15,
+    });
     return {
       access_token,
     };
