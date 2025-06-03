@@ -2,6 +2,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateDebutDto } from './dto/create-debut.dto';
 import { UpdateDebutDto } from './dto/update-debut.dto';
+import { DebutWhereInput } from "../auth/dto/sign-in.dto";
 
 @Injectable()
 export class DebutService {
@@ -18,9 +19,21 @@ export class DebutService {
     });
   }
 
-  async findAll(userId: string, onlyMine: boolean = false) {
+  async findAll(userId: string, onlyMine: boolean = false, title?: string) {
+    const where: DebutWhereInput = {};
+
+    if (onlyMine) {
+      where.ownerId = userId;
+    }
+
+    if (title) {
+      where.title = {
+        contains: title,
+        mode: 'insensitive',
+      };
+    }
     return this.prisma.debut.findMany({
-      where: onlyMine ? { ownerId: userId } : undefined,
+      where,
       include: {
         firstMoves: {
           include: { children: true },
