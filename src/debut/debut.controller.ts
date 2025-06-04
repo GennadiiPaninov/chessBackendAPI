@@ -23,7 +23,11 @@ export class DebutController {
   }
 
   @Get()
-  async findAll(@User() user: any, @Query('my') my: string, @Query('title') title?: string) {
+  async findAll(
+    @User() user: any,
+    @Query('my') my: string,
+    @Query('title') title?: string,
+  ) {
     const onlyMine = my === 'true';
     return this.debutService.findAll(user.sub, onlyMine, title);
   }

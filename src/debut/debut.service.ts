@@ -2,18 +2,28 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateDebutDto } from './dto/create-debut.dto';
 import { UpdateDebutDto } from './dto/update-debut.dto';
-import { DebutWhereInput } from "../auth/dto/sign-in.dto";
+import { DebutWhereInput } from '../auth/dto/sign-in.dto';
 
 @Injectable()
 export class DebutService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateDebutDto, user: string) {
+  async create(dto: CreateDebutDto, userId: string) {
+    const exists = await this.prisma.debut.findFirst({
+      where: {
+        title: dto.title,
+      },
+    });
+
+    if (exists) {
+      throw new ForbiddenException('Дебют с таким названием уже есть в базе.');
+    }
+
     return this.prisma.debut.create({
       data: {
         title: dto.title,
         desc: dto.desc,
-        owner: { connect: { id: user } },
+        owner: { connect: { id: userId } },
         side: dto.side,
       },
     });
@@ -32,13 +42,24 @@ export class DebutService {
         mode: 'insensitive',
       };
     }
-    return this.prisma.debut.findMany({
+
+    const debuts = await this.prisma.debut.findMany({
       where,
       include: {
-        firstMoves: {
-          include: { children: true },
+        owner: {
+          select: {
+            id: true,
+          },
         },
       },
+    });
+
+    return debuts.map((debut) => {
+      const { owner, ...rest } = debut;
+      return {
+        ...rest,
+        isMine: owner.id === userId,
+      };
     });
   }
 
