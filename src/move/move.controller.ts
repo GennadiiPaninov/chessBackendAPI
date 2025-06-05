@@ -10,14 +10,15 @@ import {
 import { MoveService } from './move.service';
 import { CreateMoveDto } from './dto/create-move.dto';
 import { UpdateMoveDto } from './dto/update-move.dto';
+import { User } from '../core/userDecorator/userDecorator';
 
 @Controller('moves')
 export class MoveController {
   constructor(private readonly moveService: MoveService) {}
 
   @Post()
-  create(@Body() dto: CreateMoveDto) {
-    return this.moveService.create(dto);
+  create(@User() user: any, @Body() dto: CreateMoveDto) {
+    return this.moveService.create(dto, user.sub);
   }
 
   @Get()

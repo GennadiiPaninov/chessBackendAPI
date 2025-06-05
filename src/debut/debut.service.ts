@@ -67,9 +67,7 @@ export class DebutService {
     return this.prisma.debut.findUnique({
       where: { id },
       include: {
-        firstMoves: {
-          include: { children: true },
-        },
+        firstMoves: true,
       },
     });
   }
