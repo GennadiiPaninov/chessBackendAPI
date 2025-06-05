@@ -63,13 +63,27 @@ export class DebutService {
     });
   }
 
-  async findOne(id: string) {
-    return this.prisma.debut.findUnique({
+  async findOne(id: string, userId: string) {
+    const debut = await this.prisma.debut.findUnique({
       where: { id },
       include: {
+        owner: {
+          select: { id: true },
+        },
         firstMoves: true,
       },
     });
+
+    if (!debut) {
+      throw new ForbiddenException('Дебют не найден');
+    }
+
+    const { owner, ...rest } = debut;
+
+    return {
+      ...rest,
+      isMine: owner.id === userId,
+    };
   }
 
   async update(id: string, dto: UpdateDebutDto, userId) {

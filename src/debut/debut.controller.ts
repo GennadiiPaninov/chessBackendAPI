@@ -33,8 +33,8 @@ export class DebutController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.debutService.findOne(id);
+  async findOne(@User() user: any,@Param('id') id: string) {
+    return this.debutService.findOne(id, user.sub);
   }
 
   @Patch(':id')
