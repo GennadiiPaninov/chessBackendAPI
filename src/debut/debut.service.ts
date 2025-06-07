@@ -19,12 +19,22 @@ export class DebutService {
       throw new ForbiddenException('Дебют с таким названием уже есть в базе.');
     }
 
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    if (!user?.name) {
+      throw new ForbiddenException('Имя пользователя не найдено');
+    }
+
     return this.prisma.debut.create({
       data: {
         title: dto.title,
         desc: dto.desc,
         owner: { connect: { id: userId } },
         side: dto.side,
+        ownerName: user.name,
       },
     });
   }

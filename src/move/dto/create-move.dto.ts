@@ -17,4 +17,7 @@ export class CreateMoveDto {
   @IsOptional()
   @IsString()
   parentId?: string;
+
+  @IsString()
+  fen: string;
 }

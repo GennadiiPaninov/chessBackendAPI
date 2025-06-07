@@ -30,8 +30,8 @@ model Debut {
   title     String
   desc      String
   createdAt DateTime @default(now())
-
-  side String
+  ownerName String
+  side      String
 
   owner   User   @relation(fields: [ownerId], references: [id])
   ownerId String
@@ -44,6 +44,7 @@ model Move {
   title    String
   desc     String
   notation String
+  fen      String
 
   debut   Debut?  @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
   debutId String?

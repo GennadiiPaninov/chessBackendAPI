@@ -60,6 +60,7 @@ export class MoveService {
         notation: dto.notation,
         debutId: dto.debutId,
         parentId: dto.parentId,
+        fen: dto.fen,
       },
     });
   }
