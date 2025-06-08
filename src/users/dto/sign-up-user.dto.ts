@@ -2,7 +2,7 @@ import { IsEmail, MaxLength, MinLength } from 'class-validator';
 
 export class SignUpUserDto {
   @MaxLength(15, { message: 'The name must be less than 16 characters long.' })
-  name?: string;
+  name: string;
   @IsEmail()
   email: string;
   @MinLength(8, {

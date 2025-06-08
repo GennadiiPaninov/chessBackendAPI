@@ -20,10 +20,10 @@ export class UsersController {
   async findOne(@Param('email') email: string) {
     return this.usersService.findOne(email);
   }
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   return this.usersService.remove(id);
-  // }
+  @Delete(':id')
+  async remove(@Param('id') id: string) {
+    return this.usersService.remove(id);
+  }
 
   // @Patch(':id')
   // update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
