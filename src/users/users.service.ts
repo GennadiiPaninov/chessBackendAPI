@@ -13,7 +13,8 @@ export class UsersService {
     const emailConfirmToken = uuidv4();
     return this.prisma.user.create({
       data: {
-        ...data,
+        email: data.email,
+        name: data.name,
         password: hashedPassword,
         emailConfirmToken,
       },

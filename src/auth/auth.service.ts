@@ -74,7 +74,11 @@ export class AuthService {
    * @throws UnauthorizedException при неверных учетных данных
    */
 
-  async signUp(email: string, pass: string): Promise<{ message: string }> {
+  async signUp(
+    email: string,
+    pass: string,
+    name: string,
+  ): Promise<{ message: string }> {
     const existingUser = await this.usersService.findOne(email);
     if (existingUser) {
       throw new UnauthorizedException('Пользователь уже существует');
@@ -83,6 +87,7 @@ export class AuthService {
     const newUser = await this.usersService.createUser({
       email,
       password: pass,
+      name,
     });
 
     await this.emailService.sendVerificationEmail(

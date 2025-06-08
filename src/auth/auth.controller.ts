@@ -41,7 +41,11 @@ export class AuthController {
   @Public()
   async signUp(@Body() data: SignInDto, @Res() res: Response) {
     try {
-      const result = await this.authService.signUp(data.email, data.password);
+      const result = await this.authService.signUp(
+        data.email,
+        data.password,
+        data.name,
+      );
       return res.json(result);
     } catch (error) {
       console.error('Error during sign in:', error);
