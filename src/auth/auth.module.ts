@@ -25,10 +25,10 @@ import { AuthGuard } from './guard/auth.guard';
   providers: [
     AuthService,
     EmailService,
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: AuthGuard,
+    // },
   ],
 })
 export class AuthModule {}
