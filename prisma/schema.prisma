@@ -40,14 +40,14 @@ model Debut {
 }
 
 model Move {
-  id       String @id @default(uuid())
+  id       String   @id @default(uuid())
   title    String
   desc     String
   notation String
   fen      String
-
-  debut   Debut?  @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
-  debutId String?
+  fens     String[]
+  debut    Debut?   @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
+  debutId  String?
 
   parent   Move?   @relation("MoveChildren", fields: [parentId], references: [id], onDelete: Cascade)
   parentId String?

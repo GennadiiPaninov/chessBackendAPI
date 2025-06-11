@@ -58,9 +58,10 @@ export class MoveService {
         title: dto.title,
         desc: dto.desc,
         notation: dto.notation,
+        fen: dto.fen,
+        fens: dto.fens,
         debutId: dto.debutId,
         parentId: dto.parentId,
-        fen: dto.fen,
       },
     });
   }

@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsOptional, IsString } from 'class-validator';
 
 export class CreateMoveDto {
   @IsString()
@@ -20,4 +20,7 @@ export class CreateMoveDto {
 
   @IsString()
   fen: string;
+  @IsArray()
+  @IsString({ each: true })
+  fens: string[];
 }
