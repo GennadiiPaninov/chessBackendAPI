@@ -27,4 +27,6 @@ export class CreateMoveDto {
   @IsArray()
   @IsString({ each: true })
   pieces: string[];
+  @IsString()
+  side: string;
 }

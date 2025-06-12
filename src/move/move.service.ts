@@ -61,6 +61,7 @@ export class MoveService {
         fen: dto.fen,
         fens: dto.fens,
         pieces: dto.pieces,
+        side: dto.side,
         debutId: dto.debutId,
         parentId: dto.parentId,
       },

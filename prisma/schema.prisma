@@ -47,8 +47,10 @@ model Move {
   fen      String
   fens     String[]
   pieces   String[]
-  debut    Debut?   @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
-  debutId  String?
+  side     String
+
+  debut   Debut?  @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
+  debutId String?
 
   parent   Move?   @relation("MoveChildren", fields: [parentId], references: [id], onDelete: Cascade)
   parentId String?
