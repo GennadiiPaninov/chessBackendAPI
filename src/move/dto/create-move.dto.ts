@@ -23,4 +23,8 @@ export class CreateMoveDto {
   @IsArray()
   @IsString({ each: true })
   fens: string[];
+
+  @IsArray()
+  @IsString({ each: true })
+  pieces: string[];
 }

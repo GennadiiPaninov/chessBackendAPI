@@ -46,6 +46,7 @@ model Move {
   notation String
   fen      String
   fens     String[]
+  pieces   String[]
   debut    Debut?   @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
   debutId  String?
 
