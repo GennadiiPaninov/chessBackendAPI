@@ -8,49 +8,35 @@ export class MoveService {
   constructor(private prisma: PrismaService) {}
 
   async create(dto: CreateMoveDto, userId: string) {
-    if (dto.debutId && dto.parentId) {
-      throw new Error('Move cannot have both debutId and parentId');
+    const { debutId, parentId } = dto;
+
+    if (debutId && parentId) {
+      throw new Error('Ход не может быть одновременно и корневым, и потомком');
     }
 
-    if (dto.debutId) {
+    let actualDebutId: string | null = null;
+
+    if (debutId) {
       const debut = await this.prisma.debut.findUnique({
-        where: { id: dto.debutId },
+        where: { id: debutId },
       });
-
-      if (!debut) {
-        throw new ForbiddenException('Такого дебюта не существует');
-      }
-
-      if (debut.ownerId !== userId) {
-        throw new ForbiddenException(
-          'Вы не можете добавлять ходы в чужой дебют',
-        );
-      }
+      if (!debut) throw new ForbiddenException('Дебют не найден');
+      if (debut.ownerId !== userId)
+        throw new ForbiddenException('Не ваш дебют');
+      actualDebutId = debut.id;
     }
 
-    if (dto.parentId) {
-      const parentMove = await this.prisma.move.findUnique({
-        where: { id: dto.parentId },
-        include: {
-          debut: {
-            select: { ownerId: true },
-          },
-        },
+    if (parentId) {
+      const parent = await this.prisma.move.findUnique({
+        where: { id: parentId },
+        include: { debut: true },
       });
 
-      if (!parentMove) {
-        throw new ForbiddenException('Родительский ход не найден');
-      }
+      if (!parent) throw new ForbiddenException('Родитель не найден');
+      if (!parent.debut || parent.debut.ownerId !== userId)
+        throw new ForbiddenException('Не ваш дебют');
 
-      if (!parentMove.debut) {
-        throw new ForbiddenException('Родительский ход не привязан к дебюту');
-      }
-
-      if (parentMove.debut.ownerId !== userId) {
-        throw new ForbiddenException(
-          'Вы не можете добавлять ходы в чужой дебют',
-        );
-      }
+      actualDebutId = parent.debut.id;
     }
 
     return this.prisma.move.create({
@@ -62,39 +48,49 @@ export class MoveService {
         fens: dto.fens,
         pieces: dto.pieces,
         side: dto.side,
-        debutId: dto.debutId,
-        parentId: dto.parentId,
+        debutId: actualDebutId,
+        parentId: parentId ?? null,
       },
     });
   }
-
-  findAll() {
+  async getRootMoves(debutId: string) {
     return this.prisma.move.findMany({
-      include: {
-        children: true,
-        parent: true,
+      where: {
+        debutId,
+        parentId: null,
       },
     });
   }
-
-  findOne(id: string) {
-    return this.prisma.move.findUnique({
+  async getChildren(parentId: string) {
+    return this.prisma.move.findMany({
+      where: { parentId },
+    });
+  }
+  async update(id: string, dto: UpdateMoveDto, userId: string) {
+    const move = await this.prisma.move.findUnique({
       where: { id },
-      include: {
-        children: true,
-        parent: true,
-      },
+      include: { debut: true },
     });
-  }
 
-  update(id: string, dto: UpdateMoveDto) {
+    if (!move) throw new ForbiddenException('Ход не найден');
+    if (!move.debut || move.debut.ownerId !== userId)
+      throw new ForbiddenException('Не ваш дебют');
+
     return this.prisma.move.update({
       where: { id },
       data: dto,
     });
   }
+  async remove(id: string, userId: string) {
+    const move = await this.prisma.move.findUnique({
+      where: { id },
+      include: { debut: true },
+    });
 
-  remove(id: string) {
+    if (!move) throw new ForbiddenException('Ход не найден');
+    if (!move.debut || move.debut.ownerId !== userId)
+      throw new ForbiddenException('Не ваш дебют');
+
     return this.prisma.move.delete({
       where: { id },
     });

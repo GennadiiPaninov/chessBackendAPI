@@ -21,23 +21,27 @@ export class MoveController {
     return this.moveService.create(dto, user.sub);
   }
 
-  @Get()
-  findAll() {
-    return this.moveService.findAll();
+  @Get('/debut/:debutId/root')
+  getRootMoves(@Param('debutId') debutId: string) {
+    return this.moveService.getRootMoves(debutId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.moveService.findOne(id);
+  @Get('/:id/children')
+  getChildren(@Param('id') id: string) {
+    return this.moveService.getChildren(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateMoveDto) {
-    return this.moveService.update(id, dto);
+  update(
+    @Param('id') id: string,
+    @User() user: any,
+    @Body() dto: UpdateMoveDto,
+  ) {
+    return this.moveService.update(id, dto, user.sub);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.moveService.remove(id);
+  remove(@Param('id') id: string, @User() user: any) {
+    return this.moveService.remove(id, user.sub);
   }
 }
