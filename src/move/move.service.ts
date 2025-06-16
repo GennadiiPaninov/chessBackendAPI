@@ -48,8 +48,9 @@ export class MoveService {
         fens: dto.fens,
         pieces: dto.pieces,
         side: dto.side,
-        debutId: actualDebutId,
-        parentId: parentId ?? null,
+        owner: { connect: { id: userId } },
+        debut: actualDebutId ? { connect: { id: actualDebutId } } : undefined,
+        parent: parentId ? { connect: { id: parentId } } : undefined,
       },
     });
   }
@@ -69,27 +70,25 @@ export class MoveService {
   async update(id: string, dto: UpdateMoveDto, userId: string) {
     const move = await this.prisma.move.findUnique({
       where: { id },
-      include: { debut: true },
     });
 
     if (!move) throw new ForbiddenException('Ход не найден');
-    if (!move.debut || move.debut.ownerId !== userId)
-      throw new ForbiddenException('Не ваш дебют');
+    if (move.ownerId !== userId) throw new ForbiddenException('Не ваш ход');
 
     return this.prisma.move.update({
       where: { id },
-      data: dto,
+      data: {
+        desc: dto.desc,
+      },
     });
   }
   async remove(id: string, userId: string) {
     const move = await this.prisma.move.findUnique({
       where: { id },
-      include: { debut: true },
     });
 
     if (!move) throw new ForbiddenException('Ход не найден');
-    if (!move.debut || move.debut.ownerId !== userId)
-      throw new ForbiddenException('Не ваш дебют');
+    if (move.ownerId !== userId) throw new ForbiddenException('Не ваш ход');
 
     return this.prisma.move.delete({
       where: { id },

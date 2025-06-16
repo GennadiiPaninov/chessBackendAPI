@@ -23,6 +23,7 @@ model User {
   isEmailConfirmed  Boolean  @default(false)
   emailConfirmToken String?
   debuts            Debut[]
+  Move              Move[]
 }
 
 model Debut {
@@ -48,6 +49,9 @@ model Move {
   fens     String[]
   pieces   String[]
   side     String
+
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
 
   debut   Debut?  @relation("DebutFirstMoves", fields: [debutId], references: [id], onDelete: Cascade)
   debutId String?
