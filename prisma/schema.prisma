@@ -50,6 +50,8 @@ model Move {
   pieces   String[]
   side     String
 
+  createdAt DateTime @default(now())
+
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId String
 
