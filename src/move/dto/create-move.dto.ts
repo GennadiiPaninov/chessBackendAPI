@@ -23,8 +23,6 @@ export class CreateMoveDto {
   @IsArray()
   @IsString({ each: true })
   fens: string[];
-  @IsString()
-  owner: string;
 
   @IsArray()
   @IsString({ each: true })
