@@ -21,7 +21,7 @@ export class MoveController {
     return this.moveService.create(dto, user.sub);
   }
   @Get(':id')
-  async getMove(@User() user: any, @Param('id') id: string) {
+  async getMove(@Param('id') id: string, @User() user?: any) {
     return this.moveService.getMove(user.sub, id);
   }
 

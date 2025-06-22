@@ -13,13 +13,26 @@ export class MoveService {
       include: {
         owner: { select: { id: true } },
         children: {
-          include: {
-            owner: { select: { id: true } },
-          },
           orderBy: { createdAt: 'asc' },
+          select: {
+            id: true,
+            title: true,
+            desc: true,
+            notation: true,
+            fen: true,
+            fens: true,
+            pieces: true,
+            side: true,
+            createdAt: true,
+            ownerId: true,
+          },
         },
       },
     });
+
+    if (!move) {
+      throw new ForbiddenException('Ход не найден');
+    }
     if (!move) throw new ForbiddenException('Ход не найден');
 
     return {
