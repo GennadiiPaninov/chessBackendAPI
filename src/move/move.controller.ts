@@ -17,22 +17,16 @@ export class MoveController {
   constructor(private readonly moveService: MoveService) {}
 
   @Post()
-  create(@User() user: any, @Body() dto: CreateMoveDto) {
+  async create(@User() user: any, @Body() dto: CreateMoveDto) {
     return this.moveService.create(dto, user.sub);
   }
-
-  @Get('/debut/:debutId/root')
-  getRootMoves(@Param('debutId') debutId: string) {
-    return this.moveService.getRootMoves(debutId);
-  }
-
-  @Get('/:id/children')
-  getChildren(@Param('id') id: string) {
-    return this.moveService.getChildren(id);
+  @Get(':id')
+  async getMove(@User() user: any, @Param('id') id: string) {
+    return this.moveService.getMove(user.sub, id);
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @User() user: any,
     @Body() dto: UpdateMoveDto,
@@ -41,7 +35,7 @@ export class MoveController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @User() user: any) {
+  async remove(@Param('id') id: string, @User() user: any) {
     return this.moveService.remove(id, user.sub);
   }
 }

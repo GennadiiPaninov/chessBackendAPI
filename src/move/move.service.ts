@@ -7,6 +7,45 @@ import { UpdateMoveDto } from './dto/update-move.dto';
 export class MoveService {
   constructor(private prisma: PrismaService) {}
 
+  async getMove(userId: string, moveId: string) {
+    const move = await this.prisma.move.findUnique({
+      where: { id: moveId },
+      include: {
+        owner: { select: { id: true } },
+        children: {
+          include: {
+            owner: { select: { id: true } },
+          },
+          orderBy: { createdAt: 'asc' },
+        },
+      },
+    });
+    if (!move) throw new ForbiddenException('Ход не найден');
+
+    return {
+      id: move.id,
+      title: move.title,
+      desc: move.desc,
+      notation: move.notation,
+      fen: move.fen,
+      fens: move.fens,
+      pieces: move.pieces,
+      side: move.side,
+      createdAt: move.createdAt,
+      isMine: move.owner.id === userId,
+      children: move.children.map((child) => ({
+        id: child.id,
+        title: child.title,
+        desc: child.desc,
+        notation: child.notation,
+        fen: child.fen,
+        fens: child.fens,
+        pieces: child.pieces,
+        side: child.side,
+        createdAt: child.createdAt,
+      })),
+    };
+  }
   async create(dto: CreateMoveDto, userId: string) {
     const { debutId, parentId } = dto;
 
@@ -54,19 +93,7 @@ export class MoveService {
       },
     });
   }
-  async getRootMoves(debutId: string) {
-    return this.prisma.move.findMany({
-      where: {
-        debutId,
-        parentId: null,
-      },
-    });
-  }
-  async getChildren(parentId: string) {
-    return this.prisma.move.findMany({
-      where: { parentId },
-    });
-  }
+
   async update(id: string, dto: UpdateMoveDto, userId: string) {
     const move = await this.prisma.move.findUnique({
       where: { id },
@@ -82,6 +109,7 @@ export class MoveService {
       },
     });
   }
+
   async remove(id: string, userId: string) {
     const move = await this.prisma.move.findUnique({
       where: { id },
