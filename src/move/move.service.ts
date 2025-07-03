@@ -101,8 +101,13 @@ export class MoveService {
         pieces: dto.pieces,
         side: dto.side,
         owner: { connect: { id: userId } },
-        debut: actualDebutId ? { connect: { id: actualDebutId } } : undefined,
-        parent: parentId ? { connect: { id: parentId } } : undefined,
+        ...(parentId
+          ? {
+              parent: { connect: { id: parentId } },
+            }
+          : {
+              debut: { connect: { id: actualDebutId! } },
+            }),
       },
     });
   }
