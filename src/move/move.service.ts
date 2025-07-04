@@ -72,23 +72,48 @@ export class MoveService {
       const debut = await this.prisma.debut.findUnique({
         where: { id: debutId },
       });
+
       if (!debut) throw new ForbiddenException('Дебют не найден');
       if (debut.ownerId !== userId)
         throw new ForbiddenException('Не ваш дебют');
+
       actualDebutId = debut.id;
     }
 
     if (parentId) {
-      const parent = await this.prisma.move.findUnique({
+      let current = await this.prisma.move.findUnique({
         where: { id: parentId },
-        include: { debut: true },
+        select: {
+          parentId: true,
+          debutId: true,
+        },
       });
 
-      if (!parent) throw new ForbiddenException('Родитель не найден');
-      if (!parent.debut || parent.debut.ownerId !== userId)
-        throw new ForbiddenException('Не ваш дебют');
+      if (!current) throw new ForbiddenException('Родитель не найден');
 
-      actualDebutId = parent.debut.id;
+      // Пройти вверх до первого корня с debutId
+      while (current && !current.debutId && current.parentId) {
+        current = await this.prisma.move.findUnique({
+          where: { id: current.parentId },
+          select: {
+            parentId: true,
+            debutId: true,
+          },
+        });
+      }
+
+      if (!current?.debutId)
+        throw new ForbiddenException('Дебют для хода не найден');
+
+      const debut = await this.prisma.debut.findUnique({
+        where: { id: current.debutId },
+      });
+
+      if (!debut) throw new ForbiddenException('Дебют не найден');
+      if (debut.ownerId !== userId)
+        throw new ForbiddenException('Вы не владеете этим дебютом');
+
+      actualDebutId = debut.id;
     }
 
     return this.prisma.move.create({
@@ -102,12 +127,8 @@ export class MoveService {
         side: dto.side,
         owner: { connect: { id: userId } },
         ...(parentId
-          ? {
-              parent: { connect: { id: parentId } },
-            }
-          : {
-              debut: { connect: { id: actualDebutId! } },
-            }),
+          ? { parent: { connect: { id: parentId } } }
+          : { debut: { connect: { id: actualDebutId! } } }),
       },
     });
   }
